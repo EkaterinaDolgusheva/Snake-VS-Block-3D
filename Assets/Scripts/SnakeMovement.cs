@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -66,7 +65,7 @@ public class SnakeMovement : MonoBehaviour
 
     private void Update()
     {
-       if (GameController.gamestate == GameController.GameState.GAME)
+       if (GameController.gameState == GameController.GameState.GAME) // заменила с gamestate на gameState
        {
             Move ();
 
@@ -75,7 +74,9 @@ public class SnakeMovement : MonoBehaviour
        }
 
         if (PartAmountTextMesh != null)
+        {
             PartAmountTextMesh.text = transform.childCount + "";
+        }
     }
 
     public void Move()
@@ -88,7 +89,7 @@ public class SnakeMovement : MonoBehaviour
 
         if (BodyParts.Count > 0)
         {
-            if (BodyParts[0].position > maxX)
+            if (BodyParts[0].position.x > maxX) // добавила вместо просто позиции, позицию по Х, аналогично 95 строке
             {
                 BodyParts[0].position = new Vector3(maxX - 0.01f, BodyParts[0].position.y, BodyParts[0].position.z);
             }
@@ -147,16 +148,15 @@ public class SnakeMovement : MonoBehaviour
 
         if (firstPart)
         {
-            newPart = (Instantiate(BodyPrefab, new Vector3(0, 0, 0), Quaternion.identity) as GameObject).transform;
-
-            PartAmountTextMesh.transform.parent = newPart.position + new Vector3(0, 0.5f, 0);
-
+            newPart = (Instantiate (BodyPrefab, new Vector3(0, 0, 0), Quaternion.identity) as GameObject).transform;
+            // PartAmountTextMesh.transform.parent = newPart.position + new Vector3(0, 0.5f, 0); ????
             firstPart = false;
         }
         else
+        {
             newPart = (Instantiate(BodyPrefab, BodyParts[BodyParts.Count - 1].position, BodyParts[BodyParts.Count - 1].rotation) as GameObject).transform;
-
-        newPart.SetParent (transform);
+        }
+        newPart.SetParent(transform);
         BodyParts.Add(newPart);
     }
 }

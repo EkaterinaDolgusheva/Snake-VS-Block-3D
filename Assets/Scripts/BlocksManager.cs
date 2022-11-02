@@ -25,7 +25,7 @@ public class BlocksManager : MonoBehaviour
 
     public int minSpawnDist;
     Vector3 previousSnakePos; // заменила вектор 2 на вектор3
-    public List<Vector3> SimpleBoxPositions = new Boo.Lang.List<Vector3>();
+    public List<Vector3> SimpleBoxPositions = new List<Vector3>(); // заменила вместо Boo.Lang.List на просто List
 
 
     private void Start()
