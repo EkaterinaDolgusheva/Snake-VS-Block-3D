@@ -149,7 +149,8 @@ public class SnakeMovement : MonoBehaviour
         if (firstPart)
         {
             newPart = (Instantiate (BodyPrefab, new Vector3(0, 0, 0), Quaternion.identity) as GameObject).transform;
-            // PartAmountTextMesh.transform.parent = newPart.position + new Vector3(0, 0.5f, 0); ????
+            PartAmountTextMesh.transform.parent = newPart; // .position + new Vector3(0, 0.5f, 0); так было без 153 строки
+            PartAmountTextMesh.transform.position = newPart.position + new Vector3(0, 0.5f, 0); // ????? можно ли так заменить ошибку
             firstPart = false;
         }
         else
