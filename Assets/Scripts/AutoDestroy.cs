@@ -20,10 +20,7 @@ public class AutoDestroy : MonoBehaviour
 
     private void SetBoxSize()
     {
-        float x;
-        float y;
-
-        transform.localScale *= ((float)Screen.width / (float)Screen.height / (9f / 16f));
+        transform.localScale *= Screen.width / Screen.height / (9f / 16f);
     }
 
     private void Start()
@@ -34,7 +31,7 @@ public class AutoDestroy : MonoBehaviour
 
         if (transform.tag == "SimpleBox")
         {
-            life = Random.Range(5, 50);
+            life = Random.Range(0, 4); // был диапазон от 5 до 50
         }
 
         lifeForColor = life;
@@ -165,7 +162,7 @@ public class AutoDestroy : MonoBehaviour
 
     public void SetBoxColor()
     {
-        Color32 thisImageColor = GetComponent<Material>().color; // заменила СпрайтРендерер на Материал
+        Color32 thisImageColor = GetComponent<MeshRenderer>().material.color; // заменила СпрайтРендерер на Материал
 
         if (lifeForColor > maxLifeForRed)
         {
@@ -179,6 +176,6 @@ public class AutoDestroy : MonoBehaviour
         {
             thisImageColor = new Color32((byte)(510 * lifeForColor / maxLifeForRed), 255, 0, 255);
         }
-        GetComponent<Material>().color = thisImageColor;
+        GetComponent<MeshRenderer>().material.color = thisImageColor;
     }
 }
