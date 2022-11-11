@@ -1,31 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class FoodBehavior : MonoBehaviour
 {
-    [Header("Snake Manager")]
+    public int Value;
+    public TextMeshPro PointsText;
 
-    SnakeMovement SM;
-    public int foodAmount;
-
-    private void Start()
+    void Start()
     {
-        SM = GameObject.FindGameObjectWithTag("SnakeManager").GetComponent <SnakeMovement>();
-        foodAmount = Random.Range(1, 10);
-        transform.GetComponentInChildren<TextMesh>().text = "" + foodAmount;
-    }
-
-    private void Update()
-    {
-        if (SM.transform.childCount > 0 && transform.position.y - SM.transform.GetChild(0).position.y < -10)
-        {
-            Destroy (this.gameObject);
-        }
-    }
-
-    private void OnTriggerEnter(Collider collision)
-    {
-        Destroy(this.gameObject);
+        PointsText.SetText(Value.ToString());
     }
 }

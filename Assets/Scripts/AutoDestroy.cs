@@ -1,181 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class AutoDestroy : MonoBehaviour
 {
-    SnakeMovement SM;
-    public int life;
-    public float lifeForColor;
-    TextMesh thisTextMesh;
+    public int Value;
+    public TextMeshPro PointsText;
+    Color lerpedColor = Color.white;
 
-    GameObject[] ToDestroy;
-    GameObject[] ToUnparent;
-
-    int maxLifeForRed = 50;
-
-    Vector3 initialPos;
-    public bool dontMove;
-
-
-    private void SetBoxSize()
+    void Start()
     {
-        transform.localScale *= Screen.width / Screen.height / (9f / 16f);
-    }
-
-    private void Start()
-    {
-        SetBoxSize();
-        SM = GameObject.FindGameObjectWithTag ("SnakeManager").GetComponent <SnakeMovement>();
-        life = Random.Range (1, GameController.SCORE / 2 + 5);
-
-        if (transform.tag == "SimpleBox")
-        {
-            life = Random.Range(0, 4); // был диапазон от 5 до 50
-        }
-
-        lifeForColor = life;
-        thisTextMesh = GetComponentInChildren <TextMesh>();
-        thisTextMesh.text = "" + life;
-
-        ToDestroy = new GameObject[transform.childCount];
-        ToUnparent = new GameObject[transform.childCount];
-
-        StartCoroutine("EnableSomeBars");
-
-        SetBoxColor();
-
-        initialPos = transform.position;
-        dontMove = false;
-    }
-
-    private void Update()
-    {
-        if (dontMove)
-        {
-            transform.position = initialPos;
-        }
-
-        if (SM.transform.childCount > 0 && transform.position.y - SM.transform.GetChild(0).position.y < -10)
-        {
-            Destroy(this.gameObject);
-        }
-
-        lifeForColor = life;
-
-        if (life <= 0)
-        {
-            transform.GetComponent <MeshRenderer>().enabled = false; // заменила spriteRenderer на mesh
-            transform.GetComponentInChildren <MeshRenderer>().enabled = false;
-            transform.GetComponent <BoxCollider>().enabled = false; // был бокс коллайдер 2д
-
-            if (transform.GetComponentInChildren <ParticleSystem>().isStopped)
-            {
-                transform.GetComponentInChildren<ParticleSystem>().Play();
-            }
-
-            Destroy(this.gameObject, 0.7f);
-        }
-    }
-
-    public void UpdateText()
-    {
-        thisTextMesh.text = "" + life;
-    }
-
-    IEnumerator EnableSomeBars()
-    {
-        int i = 0;
-        while (i < transform.childCount)
-        {
-            if (transform.GetChild(i).tag == "Bar")
-            {
-                int r = Random.Range(0, 6);
-                if (r == 1)
-                {
-                    ToUnparent[i] = transform.GetChild(i).gameObject;
-                } 
-                else
-                {
-                    ToDestroy[i] = transform.GetChild(i).gameObject;
-                }
-                
-                i++;
-                yield return new WaitForSeconds(0.01f);
-            }
-            else
-            {
-                i++;
-            }
-        }
-
-        for (int k = 0; k < ToUnparent.Length; k++)
-        {
-            if (ToUnparent[k] != null)
-            {
-                ToUnparent[k].transform.parent = null;
-            }
-            if (ToDestroy[k] != null)
-            {
-                Destroy(ToDestroy[k]);
-            }
-        }
-
-        yield return null;
-    }
-
-    private void OnTriggerEnter(Collider collision)
-    {
-        if (collision.transform.tag == "SimpleBox" && transform.tag == "Box")
-        {
-            Destroy (collision.transform.gameObject);
-        } 
-        else if (transform.tag == "SimpleBox" && collision.transform.tag == "SimpleBox")
-        {
-            Destroy (collision.transform.gameObject);
-        }
-    }
-
-    private void OnTriggerStay(Collider collision)
-    {
-        if (collision.transform.tag == "SimpleBox" && transform.tag == "Box")
-        {
-            Destroy(collision.transform.gameObject);
-        }
-        else if (transform.tag == "SimpleBox" && collision.transform.tag == "SimpleBox")
-        {
-            Destroy(collision.transform.gameObject);
-        }
-    }
-
-    private void OnCollisionStay(Collision Collision)
-    {
-        if (Collision.transform.tag == "SimpleBox" && transform.tag == "Box")
-        {
-            Destroy(Collision.transform.gameObject);
-        }
-        else if (Collision.transform.tag == "SimpleBox" && transform.tag == "SimpleBox")
-        {
-            Debug.Log ("OverLappping");
-        }
-    }
-
-    public void SetBoxColor()
-    {
-        Color32 thisImageColor = GetComponent<MeshRenderer>().material.color; // заменила —прайт–ендерер на ћатериал
-
-        if (lifeForColor > maxLifeForRed)
-        {
-            thisImageColor = new Color32(255, 0, 0, 255);
-        }
-        else if (lifeForColor >= maxLifeForRed / 2 && lifeForColor <= maxLifeForRed)
-        {
-            thisImageColor = new Color32(255, (byte)(510 * (1 - (lifeForColor / maxLifeForRed))), 0, 255);
-        }
-        else if (lifeForColor > 0 && lifeForColor < maxLifeForRed)
-        {
-            thisImageColor = new Color32((byte)(510 * lifeForColor / maxLifeForRed), 255, 0, 255);
-        }
-        GetComponent<MeshRenderer>().material.color = thisImageColor;
+        PointsText.SetText(Value.ToString());
+        lerpedColor = Color.Lerp(Color.white, Color.red, (float)Value / 20f);
+        this.GetComponent<Renderer>().material.color = lerpedColor;
     }
 }

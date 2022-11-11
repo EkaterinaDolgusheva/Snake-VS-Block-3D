@@ -1,163 +1,83 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class SnakeMovement : MonoBehaviour
 {
-    [Header("Managers")]
-    public GameController GC;
+    public float Speed;
+    public GameController Game;
+    public Transform SnakeHead;
+    public int value;
+    public int Health = 1;
+    private Rigidbody componentRigidbody;
+    Vector3 tempVect = new Vector3(0, 0, 1);
+    private Vector3 _previousMousePosition;
+    public TextMeshPro PointsText;
+    public int Length = 1;
+    private HitBoxBehavior componentSnakeTail;
 
-    [Header("Some Snake Variable & storing")]
-
-    public List<Transform> BodyParts = new List<Transform>();
-    public float minDistance = 0.25f;
-    public int initialAmount;
-    public float speed = 1;
-    public float rotationSpeed = 50;
-    public float LerpTimeX;
-    public float LerpTimeY;
-
-    [Header("Snake Head Prefab")]
-    public GameObject BodyPrefab;
-
-    [Header("parts TextAmount Management")]
-
-    public TextMesh PartAmountTextMesh;
-
-    [Header("Private Feilds")]
-    private float distance;
-    private Vector3 refVelocity;
-
-    private Transform curBodyPart;
-    private Transform prevBodyPart;
-
-    private bool firstPart;
-
-
-    [Header("MouseControl Variable")]
-
-    Vector3 mousePreviousPos; // заменила вектор2 на вектор3
-    Vector3 mouseCurrentPos; // заменила вектор2 на вектор3
-
-    [Header("Particle System Management")]
-
-    public ParticleSystem SnakeParticle;
-
-
-    private void Start()
+    void Start()
     {
-        firstPart = true;
-
-        for (int i = 0; i < initialAmount; i++)
-        {
-            Invoke("AddBodyPart", 0.1f);
-        }
+        componentRigidbody = GetComponent<Rigidbody>();
+        PointsText.SetText(Health.ToString());
+        componentSnakeTail = GetComponent<HitBoxBehavior>();
     }
 
-    public void SpawnBodyPart()
+    void Update()
     {
-        firstPart = true;
+        tempVect = tempVect.normalized * Speed * Time.deltaTime;
+        componentRigidbody.MovePosition(transform.position + tempVect);
 
-        for (int i = 0; i < initialAmount; i++)
+        if (Input.GetMouseButton(0))
         {
-            Invoke("AddBodyPart", 0.1f);
+
+            Vector3 delta = Input.mousePosition - _previousMousePosition;
+            delta = delta.normalized * Speed * Time.deltaTime;
+            Vector3 newPosition = new Vector3(transform.position.x + delta.x, transform.position.y, transform.position.z + tempVect.z);
+            componentRigidbody.MovePosition(newPosition);
         }
+        _previousMousePosition = Input.mousePosition;
     }
 
-    private void Update()
+    public void OnCollisionEnter(Collision collision)
     {
-       if (GameController.gameState == GameController.GameState.GAME) // заменила с gamestate на gameState
-       {
-            Move ();
-
-            if (BodyParts.Count == 0)
-                GC.SetGameover();
-       }
-
-        if (PartAmountTextMesh != null)
+        if (collision.gameObject.tag == "Food")
         {
-            PartAmountTextMesh.text = transform.childCount + "";
-        }
-    }
+            value = collision.gameObject.GetComponent<FoodBehavior>().Value;
+            Health += value;
+            PointsText.SetText(Health.ToString());
+            Destroy(collision.gameObject);
 
-    public void Move()
-    {
-        float curSpeed = speed;
-        if (BodyParts.Count > 0)
-            BodyParts[0].Translate(Vector3.up * curSpeed * Time.smoothDeltaTime); // заменила вектор2 на вектор3
-
-        float maxX = Camera.main.orthographicSize * Screen.width / Screen.height;
-
-        if (BodyParts.Count > 0)
-        {
-            if (BodyParts[0].position.x > maxX) // добавила вместо просто позиции, позицию по ’, аналогично 95 строке
+            for (int i = 0; i < value; i++)
             {
-                BodyParts[0].position = new Vector3(maxX - 0.01f, BodyParts[0].position.y, BodyParts[0].position.z);
-            }
-            else if (BodyParts[0].position.x < -maxX)
-            {
-                BodyParts[0].position = new Vector3(-maxX + 0.01f, BodyParts[0].position.y, BodyParts[0].position.z);
+                Length++;
+                componentSnakeTail.AddCircle();
             }
         }
-
-        if (Input.GetMouseButtonDown(0))
+        else if (collision.gameObject.tag == "Block")
         {
-            mousePreviousPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        }
-        else if (Input.GetMouseButtonDown(0))
-        {
-            if (BodyParts.Count > 0 && Mathf.Abs(BodyParts[0].position.x) < maxX)
+            value = collision.gameObject.GetComponent<AutoDestroy>().Value;
+            if (value >= Health)
             {
-                mouseCurrentPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                float deltaMousePos = Mathf.Abs(mousePreviousPos.x - mouseCurrentPos.x);
-                float sign = Mathf.Sign(mousePreviousPos.x - mouseCurrentPos.x);
+                Game.OnPlayerDied();
+                componentRigidbody.velocity = Vector3.zero;
+            }
+            else
+            {
+                Health -= value;
+                PointsText.SetText(Health.ToString());
+                Destroy(collision.gameObject);
 
-                BodyParts[0].GetComponent<Rigidbody>().AddForce(Vector3.right * rotationSpeed * deltaMousePos * -sign); //замена –игидбади2д на просто ригидбоди и вектор2 на вектор3
-                mousePreviousPos = mouseCurrentPos;
-            }
-            else if (BodyParts.Count > 0 && BodyParts[0].position.x > maxX)
-            {
-                BodyParts[0].position = new Vector3(maxX - 0.01f, BodyParts[0].position.y, BodyParts[0].position.z);
-            }
-            else if (BodyParts.Count > 0 && BodyParts[0].position.x < maxX)
-            {
-                BodyParts[0].position = new Vector3(-maxX + 0.01f, BodyParts[0].position.y, BodyParts[0].position.z);
+                for (int i = 0; i < value; i++)
+                {
+                    Length--;
+                    componentSnakeTail.RemoveCircle();
+                }
             }
         }
-
-        for (int i = 1; i < BodyParts.Count; i++)
+        else if (collision.gameObject.tag == "Finish")
         {
-            curBodyPart = BodyParts[i];
-            prevBodyPart = BodyParts[i - 1];
-
-            distance = Vector3.Distance(prevBodyPart.position, curBodyPart.position);
-
-            Vector3 newPos = prevBodyPart.position;
-            newPos.z = BodyParts[0].position.z;
-
-            Vector3 pos = curBodyPart.position;
-            pos.x = Mathf.Lerp (pos.x, newPos.x, LerpTimeX);
-            pos.y = Mathf.Lerp (pos.y, newPos.y, LerpTimeY);
-
-            curBodyPart.position = pos;
+            Game.OnPlayerWon();
         }
-    }
-
-    public void AddBodyPart ()
-    {
-        Transform newPart;
-
-        if (firstPart)
-        {
-            newPart = (Instantiate (BodyPrefab, new Vector3(0, 0, 0), Quaternion.identity) as GameObject).transform;
-            // PartAmountTextMesh.transform.parent = newPart; // .position + new Vector3(0, 0.5f, 0); так было без 153 строки
-            PartAmountTextMesh.transform.position = newPart.position + new Vector3(0, 0.5f, 0); // ????? можно ли так заменить ошибку
-            firstPart = false;
-        }
-        else
-        {
-            newPart = (Instantiate(BodyPrefab, BodyParts[BodyParts.Count - 1].position, BodyParts[BodyParts.Count - 1].rotation) as GameObject).transform;
-        }
-        newPart.SetParent(transform);
-        BodyParts.Add(newPart);
     }
 }

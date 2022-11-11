@@ -5,118 +5,33 @@ using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
-    public enum GameState {MENU, GAME, GAMEOVER}
-    public static GameState gameState;
+    public SnakeMovement Controls;
+    public GameObject Loss;
+    public static State gameState;
 
-    [Header("Managers")]
-
-    public SnakeMovement SM;
-    public BlocksManager BM;
-
-    [Header("CanvasGroup")]
-
-    public CanvasGroup MENU_CG;
-    public CanvasGroup GAME_CG;
-    public CanvasGroup GAMEOVER_CG;
-
-    [Header("ScoreManagement")]
-
-    public Text ScoreText;
-    public Text MenuScoreText;
-    public Text BestScoreText;
-    public static int SCORE;
-    public static int BESTSCORE;
-
-    [Header("SomeBool")]
-
-    bool speedAdded;
-
-
-    private void Start()
+    public enum State
     {
-        SetMenu();
-        SCORE = 0;
-
-        speedAdded = false;
-        BESTSCORE = PlayerPrefs.GetInt("BESTSCORE");
+        Playing,
+        Won,
+        Loss,
     }
 
-    private void Update()
+    public State CurrentState { get; private set; }
+
+    public void OnPlayerDied()
     {
-        ScoreText.text = SCORE + "";
-        MenuScoreText.text = SCORE + "";
-
-        if (SCORE > BESTSCORE)
-        {
-            BESTSCORE = SCORE;
-            BestScoreText.text = BESTSCORE + "";
-
-            if (!speedAdded && SCORE > 150)
-            {
-                SM.speed++;
-                speedAdded = true;
-            }
-        }
+        if (CurrentState != State.Playing) return;
+        CurrentState = State.Loss;
+        Controls.enabled = false;
+        Debug.Log("Game Over!");
+        Loss.SetActive(true);
     }
 
-    public void SetMenu()
+    public void OnPlayerWon()
     {
-        gameState = GameState.MENU;
-
-        EnableCG(MENU_CG);
-        DisableCG(GAME_CG);
-        DisableCG(GAMEOVER_CG);
+        if (CurrentState != State.Playing) return;
+        CurrentState = State.Won;
+        Controls.enabled = false;
+        Debug.Log("You Won!");
     }
-
-    public void SetGameover ()
-    {
-        gameState = GameState.GAMEOVER;
-
-        EnableCG(MENU_CG);
-        DisableCG(GAME_CG);
-        DisableCG(GAMEOVER_CG);
-
-        foreach (GameObject g in GameObject.FindGameObjectsWithTag ("Box"))
-        {
-            Destroy (g);
-        }
-
-        foreach (GameObject g in GameObject.FindGameObjectsWithTag ("Bar"))
-        {
-            Destroy (g);
-        }
-
-        foreach (GameObject g in GameObject.FindGameObjectsWithTag ("SimpleBox"))
-        {
-            Destroy(g);
-        }
-
-        foreach (GameObject g in GameObject.FindGameObjectsWithTag ("Snake"))
-        {
-            Destroy(g);
-        }
-
-        SM.SpawnBodyPart();
-        BM.SetPreviousSnakePosAfterGameover(); // исправила, добавила как в ВМ СэтПревиоусСнэйкПосАфтерГеймовер
-        speedAdded = false;
-        SM.speed = 3;
-
-        PlayerPrefs.SetInt("Bestscore ", BESTSCORE);
-        BM.SimpleBoxPositions.Clear(); // исправила, добавила с на конце позитион
-    }
-
-    public void EnableCG (CanvasGroup cg)
-    {
-        cg.alpha = 1;
-        cg.blocksRaycasts = true;
-        cg.interactable = true;
-    }
-
-    public void DisableCG (CanvasGroup cg)
-    {
-        cg.alpha = 0;
-        cg.blocksRaycasts = false;
-        cg.interactable = false;
-    }
-
 }

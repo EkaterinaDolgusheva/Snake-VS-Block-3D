@@ -4,81 +4,48 @@ using UnityEngine;
 
 public class HitBoxBehavior : MonoBehaviour
 {
-    SnakeMovement SM;
+    public Transform SnakeHead;
+    public float CircleDiameter;
 
-    private void Start()
+    private List<Transform> snakeCircles = new List<Transform>();
+    private List<Vector3> positions = new List<Vector3>();
+
+    private void Awake()
     {
-        SM = transform.GetComponentInParent<SnakeMovement>();
+        positions.Add(SnakeHead.position);
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void Update()
     {
-        if (collision.transform.tag == "Box" && transform == SM.BodyParts[0])
-        {
-            if (SM.BodyParts.Count > 1 && SM.BodyParts[1] != null)
-            {
-                SM.PartAmountTextMesh.transform.parent = SM.BodyParts[1];
-                SM.PartAmountTextMesh.transform.position = SM.BodyParts[1].position + new Vector3 (0, 0.5f, 0);
-            }
-            else if (SM.BodyParts.Count == 1)
-            {
-                SM.PartAmountTextMesh.transform.parent = null;
-            }
-            
-            SM.SnakeParticle.Stop();
-            SM.SnakeParticle.transform.position = collision.contacts[0].point;
-            SM.SnakeParticle.Play();
-            
-            Destroy (this.gameObject);
-            GameController.SCORE++;
-            collision.transform.GetComponent<AutoDestroy>().life -= 1;
-            collision.transform.GetComponent<AutoDestroy>().UpdateText();
-            collision.transform.GetComponent<AutoDestroy>().SetBoxColor();
+        float distance = ((Vector3)SnakeHead.position - positions[0]).magnitude;
 
-            SM.BodyParts.Remove (SM.BodyParts[0]);
+        if (distance > CircleDiameter)
+        {
+            Vector3 direction = ((Vector3)SnakeHead.position - positions[0]).normalized;
+
+            positions.Insert(0, positions[0] + direction * CircleDiameter);
+            positions.RemoveAt(positions.Count - 1);
+
+            distance -= CircleDiameter;
         }
-        else if (collision.transform.tag == "SimpleBox" && transform == SM.BodyParts[0])
-        {
-            SM.SnakeParticle.Stop();
-            SM.SnakeParticle.transform.position = collision.contacts[0].point;
-            SM.SnakeParticle.Play();
-            if (SM.BodyParts.Count > 1 && SM.BodyParts[1] != null)
-            {
-                SM.PartAmountTextMesh.transform.parent = SM.BodyParts[1];
-                SM.PartAmountTextMesh.transform.position = SM.BodyParts[1].position + new Vector3 (0, 0.5f, 0);
-            }
-            else if (SM.BodyParts.Count == 1)
-            {
-                SM.PartAmountTextMesh.transform.parent = null;
-            }
 
-            Destroy(this.gameObject);
-            GameController.SCORE++;
-            collision.transform.GetComponent<AutoDestroy>().life -= 1;
-            collision.transform.GetComponent<AutoDestroy>().UpdateText();
-            collision.transform.GetComponent<AutoDestroy>().SetBoxColor();
-            SM.BodyParts.Remove (SM.BodyParts[0]);
-        } 
-        else if (collision.transform.tag == "SimpleBox" && transform != SM.BodyParts[0])
+        for (int i = 0; i < snakeCircles.Count; i++)
         {
-            Physics.IgnoreCollision(transform.GetComponent<Collider>(), collision.transform.GetComponent<Collider>());
-            collision.transform.GetComponent<AutoDestroy>().dontMove = true;
+            snakeCircles[i].position = Vector3.Lerp(positions[i + 1], positions[i], distance / CircleDiameter);
         }
     }
 
-    private void OnTriggerEnter(Collider collision)
+    public void AddCircle()
     {
-        if (SM.BodyParts.Count > 0)
-        {
-            if (collision.transform.tag == "Food" && transform == SM.BodyParts[0])
-            {
-                for (int i = 0; i < collision.transform.GetComponent<FoodBehavior>().foodAmount; i++)
-                {
-                    SM.AddBodyPart();
-                }
+        Transform circle = Instantiate(SnakeHead, positions[positions.Count - 1], Quaternion.identity, transform);
+        snakeCircles.Add(circle);
+        positions.Add(circle.position);
+    }
 
-                Destroy (collision.transform.gameObject);
-            }
-        }
+    public void RemoveCircle()
+    {
+        Destroy(snakeCircles[0].gameObject);
+        snakeCircles.RemoveAt(0);
+        positions.RemoveAt(1);
     }
 }

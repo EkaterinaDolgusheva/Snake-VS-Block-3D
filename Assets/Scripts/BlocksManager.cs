@@ -5,27 +5,19 @@ using UnityEngine;
 
 public class BlocksManager : MonoBehaviour
 {
-    [Header("Snake manager")]
-
     public SnakeMovement SM;
     public float distanceSnakeBarrier;
 
-    [Header("BlockPrefab")]
-
     public GameObject BlockPrefab;
-
-    [Header("Time To SpawnDelegate management")]
 
     public float minSpawnTime;
     public float maxSpawnTime;
     private float thisTime;
     private float randomTime;
 
-    [Header("Snake Value for Spawning")]
-
     public int minSpawnDist;
-    Vector3 previousSnakePos; // заменила вектор 2 на вектор3
-    public List<Vector3> SimpleBoxPositions = new List<Vector3>(); // заменила вместо Boo.Lang.List на просто List
+    Vector3 previousSnakePos;
+    public List<Vector3> SimpleBoxPositions = new List<Vector3>();
 
 
     private void Start()
@@ -39,7 +31,7 @@ public class BlocksManager : MonoBehaviour
 
     private void Update()
     {
-        if (GameController.gameState == GameController.GameState.GAME)
+        if (GameController.gameState == GameController.State.Playing)
         {
             if (thisTime < randomTime)
             {
@@ -49,12 +41,12 @@ public class BlocksManager : MonoBehaviour
             {
                 SpawnBlocks();
                 thisTime = 0;
-                randomTime = Random.Range (minSpawnTime, maxSpawnTime);
+                randomTime = Random.Range(minSpawnTime, maxSpawnTime);
             }
 
             if (SM.transform.childCount > 0)
             {
-                if (SM.transform.GetChild(0).position.y - previousSnakePos.y > minSpawnDist)
+                if (SM.transform.GetChild(0).position.z - previousSnakePos.z > minSpawnDist)
                 {
                     SpawnBarrier();
                 }
@@ -65,7 +57,7 @@ public class BlocksManager : MonoBehaviour
     public void SpawnBarrier()
     {
         float screenWidthWorldPos = Camera.main.orthographicSize * Screen.width / Screen.height;
-        float distBetweenBlocks = screenWidthWorldPos / 5;
+        float distBetweenBlocks = screenWidthWorldPos / 1; // было 5
 
         for (int i = -2; i < 3; i++)
         {
@@ -81,8 +73,8 @@ public class BlocksManager : MonoBehaviour
                 }
             }
 
-            Vector3 spawnPos = new Vector3 (x, y, 0);
-            GameObject boxInstance = Instantiate (BlockPrefab, spawnPos, Quaternion.identity, transform);
+            Vector3 spawnPos = new Vector3(x, y, 0);
+            GameObject boxInstance = Instantiate(BlockPrefab, spawnPos, Quaternion.identity, transform);
 
             if (SM.transform.childCount > 0)
             {
@@ -91,7 +83,7 @@ public class BlocksManager : MonoBehaviour
         }
     }
 
-    public void SpawnBlocks ()
+    public void SpawnBlocks()
     {
         float screenWidthWorldPos = Camera.main.orthographicSize * Screen.width / Screen.height;
         float distBetweenBlocks = screenWidthWorldPos / 5;
@@ -100,8 +92,7 @@ public class BlocksManager : MonoBehaviour
         random = Random.Range(-2, 3);
 
         float x = 2 * random * distBetweenBlocks;
-        float y = 0; 
-        //наверное надодобавить Z
+        float y = 0;
 
         if (SM.transform.childCount > 0)
         {
@@ -112,12 +103,12 @@ public class BlocksManager : MonoBehaviour
             }
         }
 
-        Vector3 SpawnPos = new Vector3 (x, y, 0);
+        Vector3 SpawnPos = new Vector3(x, y, 0);
         bool canSpawnBlock = true;
 
         if (SimpleBoxPositions.Count == 0)
         {
-            SimpleBoxPositions.Add (SpawnPos);
+            SimpleBoxPositions.Add(SpawnPos);
         }
         else
         {
@@ -139,8 +130,8 @@ public class BlocksManager : MonoBehaviour
             boxInstance.name = "SimpleBox";
             boxInstance.tag = "SimpleBox";
             boxInstance.layer = LayerMask.NameToLayer("Default");
-            boxInstance.AddComponent<Rigidbody>(); //замена ригидбоди2д на ригидбоди
-            boxInstance.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll; //замена ригидбоди2д на ригидбоди и ригидбоди.констраинтс2д на без 2д
+            boxInstance.AddComponent<Rigidbody>();
+            boxInstance.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
         }
     }
 
@@ -149,7 +140,7 @@ public class BlocksManager : MonoBehaviour
         Invoke("PreviousPosInvoke", 0.5f);
     }
 
-    private void PreviousPosInvoke ()
+    private void PreviousPosInvoke()
     {
         previousSnakePos.y = SM.transform.GetChild(0).position.y;
     }

@@ -10,6 +10,8 @@ TagManager:
   - SimpleBox
   - Snake
   - Food
+  - Block
+  - BlockManager
   layers:
   - Default
   - TransparentFX
