@@ -9,7 +9,7 @@ public class CameraMovement : MonoBehaviour
     void Update()
     {
         Vector3 transformPosition = transform.position;
-        transformPosition.z = Target.position.z - 6;
+        transformPosition.z = Target.position.z - 0;
         transform.position = transformPosition;
     }
 }

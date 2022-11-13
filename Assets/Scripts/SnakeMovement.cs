@@ -8,13 +8,14 @@ public class SnakeMovement : MonoBehaviour
     public GameController Game;
     public Transform SnakeHead;
     public int value;
-    public int Health = 1;
+    public int Health = 3;
     private Rigidbody componentRigidbody;
     Vector3 tempVect = new Vector3(0, 0, 1);
     private Vector3 _previousMousePosition;
     public TextMeshPro PointsText;
     public int Length = 1;
     private HitBoxBehavior componentSnakeTail;
+    public float Sensitivity;
 
     void Start()
     {
@@ -25,14 +26,14 @@ public class SnakeMovement : MonoBehaviour
 
     void Update()
     {
-        tempVect = tempVect.normalized * Speed * Time.deltaTime;
+        tempVect = Speed * Time.deltaTime * tempVect.normalized;
         componentRigidbody.MovePosition(transform.position + tempVect);
 
         if (Input.GetMouseButton(0))
         {
 
             Vector3 delta = Input.mousePosition - _previousMousePosition;
-            delta = delta.normalized * Speed * Time.deltaTime;
+            delta = Speed * Time.deltaTime * delta.normalized * Sensitivity;
             Vector3 newPosition = new Vector3(transform.position.x + delta.x, transform.position.y, transform.position.z + tempVect.z);
             componentRigidbody.MovePosition(newPosition);
         }

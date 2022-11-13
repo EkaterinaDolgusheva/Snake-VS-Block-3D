@@ -13,6 +13,6 @@ public class AutoDestroy : MonoBehaviour
     {
         PointsText.SetText(Value.ToString());
         lerpedColor = Color.Lerp(Color.white, Color.red, (float)Value / 20f);
-        this.GetComponent<Renderer>().material.color = lerpedColor;
+        GetComponent<Renderer>().material.color = lerpedColor;
     }
 }
