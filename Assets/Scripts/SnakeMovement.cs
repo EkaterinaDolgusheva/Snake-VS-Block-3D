@@ -8,7 +8,7 @@ public class SnakeMovement : MonoBehaviour
     public GameController Game;
     public Transform SnakeHead;
     public int value;
-    public int Health = 3;
+    public int Health = 1;
     private Rigidbody componentRigidbody;
     Vector3 tempVect = new Vector3(0, 0, 1);
     private Vector3 _previousMousePosition;
@@ -33,8 +33,8 @@ public class SnakeMovement : MonoBehaviour
         {
 
             Vector3 delta = Input.mousePosition - _previousMousePosition;
-            delta = Speed * Time.deltaTime * delta.normalized * Sensitivity;
-            Vector3 newPosition = new Vector3(transform.position.x + delta.x, transform.position.y, transform.position.z + tempVect.z);
+            delta = Speed * Time.deltaTime * delta.normalized;
+            Vector3 newPosition = new Vector3(transform.position.x + delta.x * Sensitivity, transform.position.y, transform.position.z + tempVect.z);
             componentRigidbody.MovePosition(newPosition);
         }
         _previousMousePosition = Input.mousePosition;
