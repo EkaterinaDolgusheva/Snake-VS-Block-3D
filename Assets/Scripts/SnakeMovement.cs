@@ -9,7 +9,7 @@ public class SnakeMovement : MonoBehaviour
     public Transform SnakeHead;
     public int value;
     public int Health = 1;
-    private Rigidbody componentRigidbody;
+    private Rigidbody Rigidbody;
     Vector3 tempVect = new Vector3(0, 0, 1);
     private Vector3 _previousMousePosition;
     public TextMeshPro PointsText;
@@ -19,24 +19,24 @@ public class SnakeMovement : MonoBehaviour
 
     void Start()
     {
-        componentRigidbody = GetComponent<Rigidbody>();
+        Rigidbody = GetComponent<Rigidbody>();
         PointsText.SetText(Health.ToString());
         componentSnakeTail = GetComponent<HitBoxBehavior>();
     }
 
-    void Update()
+    void FixedUpdate()
     {
         tempVect = Speed * Time.deltaTime * tempVect.normalized;
-        componentRigidbody.MovePosition(transform.position + tempVect);
+        Vector3 newPosition = transform.position + tempVect;
 
         if (Input.GetMouseButton(0))
         {
-
             Vector3 delta = Input.mousePosition - _previousMousePosition;
             delta = Speed * Time.deltaTime * delta.normalized;
-            Vector3 newPosition = new Vector3(transform.position.x + delta.x * Sensitivity, transform.position.y, transform.position.z + tempVect.z);
-            componentRigidbody.MovePosition(newPosition);
+            newPosition.x += delta.x * Sensitivity;
         }
+
+        Rigidbody.MovePosition(newPosition);
         _previousMousePosition = Input.mousePosition;
     }
 
@@ -61,7 +61,7 @@ public class SnakeMovement : MonoBehaviour
             if (value >= Health)
             {
                 Game.OnPlayerDied();
-                componentRigidbody.velocity = Vector3.zero;
+                Rigidbody.velocity = Vector3.zero;
             }
             else
             {
